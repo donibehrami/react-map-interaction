@@ -463,7 +463,6 @@ class MapInteraction extends Component {
         onClickCapture={handleEventCapture}
         onTouchEndCapture={handleEventCapture}
       >
-        <div>asd</div>
         {(children || undefined) && children({ translation, scale })}
         {(showControls || undefined) && this.renderControls()}
       </div>
