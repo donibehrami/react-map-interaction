@@ -87,30 +87,23 @@ class MapInteraction extends Component {
     this.onTouchEnd = this.onTouchEnd.bind(this);
 
     this.onWheel = this.onWheel.bind(this);
+
+    this.addZoomEvents = this.addZoomEvents.bind(this);
+    this.addPanEvents = this.addPanEvents.bind(this);
+
+    this.removeZoomEvents = this.removeZoomEvents.bind(this);
+    this.removePanEvents = this.removePanEvents.bind(this);
   }
 
   componentDidMount() {
     const passiveOption = makePassiveEventOption(false);
 
-    this.getContainerNode().addEventListener('wheel', this.onWheel, passiveOption);
+    this.addZoomEvents(passiveOption);
 
     /*
       Setup events for the gesture lifecycle: start, move, end touch
     */
-
-    // start gesture
-    this.getContainerNode().addEventListener('touchstart', this.onTouchStart, passiveOption);
-    this.getContainerNode().addEventListener('mousedown', this.onMouseDown, passiveOption);
-
-    // move gesture
-    window.addEventListener('touchmove', this.onTouchMove, passiveOption);
-    window.addEventListener('mousemove', this.onMouseMove, passiveOption);
-
-    // end gesture
-    const touchAndMouseEndOptions = { capture: true, ...passiveOption };
-    window.addEventListener('touchend', this.onTouchEnd, touchAndMouseEndOptions);
-    window.addEventListener('mouseup', this.onMouseUp, touchAndMouseEndOptions);
-
+    this.addPanEvents(passiveOption);
   }
 
   componentWillReceiveProps(newProps) {
@@ -132,18 +125,24 @@ class MapInteraction extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.disableZoom && !prevProps.disableZoom){
+      this.removeZoomEvents();
+    } else if (!this.props.disableZoom && prevProps.disableZoom){
+      const passiveOption = makePassiveEventOption(false);
+      this.addZoomEvents(passiveOption);
+    }
+
+    if (this.props.disablePan && !prevProps.disablePan){
+      this.removePanEvents();
+    } else if (!this.props.disablePan && prevProps.disablePan){
+      const passiveOption = makePassiveEventOption(false);
+      this.addPanEvents(passiveOption);
+    }
+  }
+
   componentWillUnmount() {
-    this.getContainerNode().removeEventListener('wheel', this.onWheel);
-
-    // Remove touch events
-    this.getContainerNode().removeEventListener('touchstart', this.onTouchStart);
-    window.removeEventListener('touchmove', this.onTouchMove);
-    window.removeEventListener('touchend', this.onTouchEnd);
-
-    // Remove mouse events
-    this.getContainerNode().removeEventListener('mousedown', this.onMouseDown);
-    window.removeEventListener('mousemove', this.onMouseMove);
-    window.removeEventListener('mouseup', this.onMouseUp);
+    this.removeEvents();
   }
 
   updateParent() {
@@ -207,6 +206,41 @@ class MapInteraction extends Component {
     } else if ((e.touches.length === 1) && this.startPointerInfo && !disablePan) {
       this.onDrag(e.touches[0]);
     }
+  }
+
+  addZoomEvents(passiveOption) {
+    this.getContainerNode().addEventListener('wheel', this.onWheel, passiveOption);
+  }
+
+  addPanEvents(passiveOption) {
+    // start gesture
+    this.getContainerNode().addEventListener('touchstart', this.onTouchStart, passiveOption);
+    this.getContainerNode().addEventListener('mousedown', this.onMouseDown, passiveOption);
+
+    // // move gesture
+    window.addEventListener('touchmove', this.onTouchMove, passiveOption);
+    window.addEventListener('mousemove', this.onMouseMove, passiveOption);
+
+    // // end gesture
+    const touchAndMouseEndOptions = { capture: true, ...passiveOption };
+    window.addEventListener('touchend', this.onTouchEnd, touchAndMouseEndOptions);
+    window.addEventListener('mouseup', this.onMouseUp, touchAndMouseEndOptions);
+  }
+
+  removeZoomEvents() {
+    this.getContainerNode().removeEventListener('wheel', this.onWheel);
+  }
+
+  removePanEvents() {
+    // Remove touch events
+    this.getContainerNode().removeEventListener('touchstart', this.onTouchStart);
+    window.removeEventListener('touchmove', this.onTouchMove);
+    window.removeEventListener('touchend', this.onTouchEnd);
+
+    // Remove mouse events
+    this.getContainerNode().removeEventListener('mousedown', this.onMouseDown);
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
   }
 
   // handles both touch and mouse drags
@@ -429,6 +463,7 @@ class MapInteraction extends Component {
         onClickCapture={handleEventCapture}
         onTouchEndCapture={handleEventCapture}
       >
+        <div>asd</div>
         {(children || undefined) && children({ translation, scale })}
         {(showControls || undefined) && this.renderControls()}
       </div>
