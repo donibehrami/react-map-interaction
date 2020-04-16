@@ -142,7 +142,8 @@ class MapInteraction extends Component {
   }
 
   componentWillUnmount() {
-    this.removeEvents();
+    this.removeZoomEvents();
+    this.removePanEvents();
   }
 
   updateParent() {
